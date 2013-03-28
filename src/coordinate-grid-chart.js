@@ -23,6 +23,7 @@ dc.coordinateGridChart = function (_chart) {
     var _yAxis = d3.svg.axis();
     var _yAxisPadding = 0;
     var _yElasticity = false;
+    var _yAxisRightAlignment = false;
 
     var _filter;
     var _brush = d3.svg.brush();
@@ -218,19 +219,24 @@ dc.coordinateGridChart = function (_chart) {
             _y = d3.scale.linear();
             _y.domain([_chart.yAxisMin(), _chart.yAxisMax()]).rangeRound([_chart.yAxisHeight(), 0]);
         }
+        
+        var yOrient = _yAxisRightAlignment ? 'right' : 'left';
 
         _y.range([_chart.yAxisHeight(), 0]);
-        _yAxis = _yAxis.scale(_y).orient("left").ticks(DEFAULT_Y_AXIS_TICKS);
+        _yAxis = _yAxis.scale(_y).orient(yOrient).ticks(DEFAULT_Y_AXIS_TICKS);
+        //_yAxis = _yAxis.scale(_y).orient("left").ticks(DEFAULT_Y_AXIS_TICKS);
 
         renderHorizontalGridLines(g);
     }
 
     _chart.renderYAxis = function (g) {
         var axisYG = g.selectAll("g.y");
+        var yAlignment = _yAxisRightAlignment ? _chart.yAxisRightX() : _chart.yAxisX();
         if (axisYG.empty())
             axisYG = g.append("g")
                 .attr("class", "axis y")
-                .attr("transform", "translate(" + _chart.yAxisX() + "," + _chart.margins().top + ")");
+                .attr("transform", "translate(" + yAlignment + "," + _chart.margins().top + ")");
+                //.attr("transform", "translate(" + _chart.yAxisX() + "," + _chart.margins().top + ")");
 
         dc.transition(axisYG, _chart.transitionDuration())
             .call(_yAxis);
@@ -284,6 +290,10 @@ dc.coordinateGridChart = function (_chart) {
     _chart.yAxisX = function () {
         return _chart.margins().left;
     };
+    
+    _chart.yAxisRightX = function () {
+        return _chart.width() - _chart.margins().right;
+    };
 
     _chart.y = function (_) {
         if (!arguments.length) return _y;
@@ -300,6 +310,12 @@ dc.coordinateGridChart = function (_chart) {
     _chart.elasticY = function (_) {
         if (!arguments.length) return _yElasticity;
         _yElasticity = _;
+        return _chart;
+    };
+    
+    _chart.yAlignRight = function(_) {
+        if (!arguments.length) return _yAxisRightAlignment;
+        _yAxisRightAlignment = !!_;
         return _chart;
     };
 
